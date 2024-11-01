@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "memory": 300,
+      "maxDuration": 30
+    },
+    "api/transfer.js": {
+      "memory": 300,
+      "maxDuration": 5
+    }
+  },
+"rewrites": [
+  {
+    "source": "/verifyPayment",
+    "destination": "/api/index"
+    },
+  {
+    "source": "/verifyTransfer",
+    "destination": "/api/transfer"
+    }
+  ]
+}
