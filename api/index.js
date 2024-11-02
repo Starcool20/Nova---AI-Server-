@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-import OpenAI from "openai";
+const OpenAI = require("openai");
 
 const app = express();
 const upload = multer({ dest: '/tmp' });
