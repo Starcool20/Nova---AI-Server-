@@ -6,10 +6,10 @@
       "maxDuration": 60
     }
   },
-"rewrites": [
-  {
-    "source": "/prompt-nova",
-    "destination": "/api/index"
+  "rewrites": [
+    {
+      "source": "/prompt-nova",
+      "destination": "/api/index"
     }
   ]
 }
