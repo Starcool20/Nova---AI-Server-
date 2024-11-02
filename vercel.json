@@ -6,10 +6,5 @@
       "maxDuration": 60
     }
   },
-  "rewrites": [
-    {
-      "source": "/transcribe-audio",
-      "destination": "/api/transcribe-audio"
-    }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }] 
 }
