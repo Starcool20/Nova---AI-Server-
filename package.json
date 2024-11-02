@@ -1,4 +1,16 @@
 {
+"name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build": "npm install"
+  },
+  // specify the node version in my case it's 18.7.0 so 18.x
+  "engines": {
+    "node": "18.x"
+  },
   "type": "module",
   "dependencies": {
     "express": "^4.21.1",
