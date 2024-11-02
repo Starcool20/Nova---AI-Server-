@@ -2,22 +2,14 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "memory": 300,
-      "maxDuration": 30
-    },
-    "api/transfer.js": {
-      "memory": 300,
-      "maxDuration": 5
+      "memory": 500,
+      "maxDuration": 60
     }
   },
 "rewrites": [
   {
-    "source": "/verifyPayment",
+    "source": "/prompt-nova",
     "destination": "/api/index"
-    },
-  {
-    "source": "/verifyTransfer",
-    "destination": "/api/transfer"
     }
   ]
 }
