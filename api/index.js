@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
-const { OpenAIApi } = require('openai');
+const { OpenAI } = require('openai');
 
 const app = express();
 const upload = multer({ dest: '/tmp' });
