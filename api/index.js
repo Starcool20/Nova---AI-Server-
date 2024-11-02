@@ -71,7 +71,7 @@ async function streamTextToSpeech(gptResponse, res) {
 }
 
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
-app.post('/', upload.single('audio'), async (req, res) => {
+app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
   try {
     const audioFilePath = req.file.path;
 
