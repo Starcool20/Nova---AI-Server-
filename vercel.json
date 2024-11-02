@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "src/api/index.js": {
+    "api/index.js": {
       "memory": 500,
       "maxDuration": 60
     }
@@ -9,7 +9,7 @@
   "rewrites": [
     {
       "source": "/prompt-nova",
-      "destination": "/src/api/index"
+      "destination": "/api/index"
     }
   ]
 }
