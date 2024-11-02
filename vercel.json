@@ -1,15 +1,21 @@
 {
   "version": 2,
   "functions": {
-    "src/api/index.js": {
+    "api/index.js": {
       "memory": 500,
       "maxDuration": 60
     }
   },
-  "rewrites": [
+  "builds": [
     {
-      "source": "/prompt-nova",
-      "destination": "/api/index.js"
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.js"
     }
   ]
 }
