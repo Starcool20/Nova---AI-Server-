@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
-const { Configuration, OpenAIApi } = require('openai');
+const { OpenAIApi } = require('openai');
 
 const app = express();
 const upload = multer({ dest: '/tmp' });
@@ -27,11 +27,9 @@ const handler = (req, res) => {
 };
 
 // Initialize OpenAI API with API key
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
-
 // Function to transcribe audio
 async function transcribeAudio(filePath) {
   const response = await openai.createTranscription({
