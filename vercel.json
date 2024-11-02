@@ -6,16 +6,10 @@
       "maxDuration": 60
     }
   },
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
+      "source": "/transcribe-audio",
+      "destination": "/api/transcribe-audio"
     }
   ]
 }
