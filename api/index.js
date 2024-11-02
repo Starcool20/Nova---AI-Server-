@@ -32,32 +32,30 @@ const openai = new OpenAI({
 });
 // Function to transcribe audio
 async function transcribeAudio(filePath) {
-  const response = await openai.createTranscription({
+  const response = await openai.audio.transcriptions.create({
     file: fs.createReadStream(filePath),
     model: 'whisper-1',
+    response_format: "text",
   });
-  return response.data.text;
+  return response.text;
 }
 
 // Function to get GPT-generated response based on transcription
 async function getGPTResponse(transcription) {
-  const response = await openai.createChatCompletion({
-    model: 'gpt-4',
+  const response = await openai.openai.chat.completions.create({
+    model: 'gpt-4o',
     messages: [{ role: 'user', content: transcription }],
   });
-  return response.data.choices[0].message.content;
+  return response.choices[0].message;
 }
 
 // Function to convert GPT response to speech with streaming
 async function streamTextToSpeech(gptResponse, res) {
-  const ttsResponse = await openai.createTTS(
-    {
-      text: gptResponse,
-      voice: "Aloy",
-      stream: true, // Enable streaming for TTS response
-    },
-    { responseType: 'stream' }
-  );
+  const ttsResponse = await openai.audio.speech.create({
+  model: "tts-1",
+  voice: "alloy",
+  input: gptResponse,
+});
 
   // Stream each audio chunk to the client
   ttsResponse.data.on('data', (chunk) => {
