@@ -76,7 +76,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     
     const newFilePath = path.join(path.dirname(audioFilePath), `${path.basename(audioFilePath, path.extname(audioFilePath))}.m4a`);
     
-    fs.rename(audioFilePath, newFilePath, (err) => {
+    fs.rename(audioFilePath, newFilePath, async (err) => { // Add async here
       if (err) {
         console.error('Error renaming file:', err);
         return res.status(500).send('Error processing the audio file.');
