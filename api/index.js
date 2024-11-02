@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
 import OpenAI from "openai";
 
 const app = express();
@@ -72,6 +73,14 @@ async function streamTextToSpeech(gptResponse, res) {
 app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
   try {
     const audioFilePath = req.file.path;
+    
+    const newFilePath = path.join(path.dirname(audioFilePath), `${path.basename(audioFilePath, path.extname(audioFilePath))}.m4a`);
+    
+    fs.rename(audioFilePath, newFilePath, (err) => {
+      if (err) {
+        console.error('Error renaming file:', err);
+        return res.status(500).send('Error processing the audio file.');
+      }
 
     // Step 1: Transcribe audio
     const transcription = await transcribeAudio(audioFilePath);
