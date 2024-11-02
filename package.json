@@ -107,7 +107,11 @@
   "devDependencies": {},
   "scripts": {
     "start": "node index.js",
+    "build": "npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "18.x"
   },
   "keywords": [],
   "author": "",
