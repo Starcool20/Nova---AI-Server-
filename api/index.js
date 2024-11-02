@@ -95,8 +95,9 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     await streamTextToSpeech(gptResponse, res);
 
     // Cleanup: Delete the audio file after processing
-    fs.unlink(audioFilePath, (err) => {
-      if (err) console.error('Failed to delete file:', err);
+    fs.unlink(newFilePath, (err) => {
+        if (err) console.error('Failed to delete file:', err);
+      });
     });
   } catch (error) {
     console.error(error);
