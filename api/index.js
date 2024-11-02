@@ -4,7 +4,7 @@ const fs = require('fs');
 const { Configuration, OpenAIApi } = require('openai');
 
 const app = express();
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: '/tmp' });
 
 // Enable CORS
 const allowCors = (fn) => async (req, res) => {
