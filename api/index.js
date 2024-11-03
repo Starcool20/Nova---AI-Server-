@@ -33,9 +33,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 // Function to transcribe audio
-async function transcribeAudio(audioStream) {
+async function transcribeAudio(filePath) {
   const response = await openai.audio.transcriptions.create({
-    file: audioStream,
+    file: fs.createReadStream(filePath), 
     model: 'whisper-1',
     response_format: "text",
     language: 'en',
@@ -81,11 +81,14 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
       return res.status(400).json({ error: 'Audio file is required' });
     }
 
-    // Convert buffer to a Readable stream using Readable.from
-    const audioStream = Readable.from(req.file.buffer);
+    // Log req.file to see its properties
+    console.log('Uploaded file info:', req.file);
+
+    // Construct the path to the uploaded file
+    const filePath = path.join('/tmp', req.file.filename);
 
     // Step 1: Transcribe audio
-    const transcription = await transcribeAudio(audioStream);
+    const transcription = await transcribeAudio(filePath);
 
     // Step 2: Generate response using GPT based on the transcription
     const gptResponse = await getGPTResponse(transcription);
