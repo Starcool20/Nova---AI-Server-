@@ -57,6 +57,7 @@ async function getGPTResponse(transcription) {
 // Function to convert GPT response to speech with streaming
 async function streamTextToSpeech(gptResponse, res) {
   try {
+    // Request TTS from OpenAI API
     const ttsResponse = await openai.audio.speech.create({
       model: "tts-1",
       voice: "nova",
@@ -64,31 +65,24 @@ async function streamTextToSpeech(gptResponse, res) {
       response_format: 'mp3',
     });
 
-    const reader = ttsResponse.getReader();
+    // Check if response is valid
+    if (!ttsResponse || !ttsResponse.arrayBuffer) {
+      throw new Error('Invalid TTS response');
+    }
 
-    // Read the stream
-    const pump = async () => {
-      const { done, value } = await reader.read();
-      if (done) {
-        console.log('Streaming finished.');
-        res.end(); // Finalize the response when done
-        return;
-      }
-      res.write(value); // Write the chunk to the response
-      console.log('Chunk sent:', value.length); // Log the length of the sent chunk
-      pump(); // Continue reading
-    };
+    // Convert the response to a buffer
+    const buffer = Buffer.from(await ttsResponse.arrayBuffer());
 
-    pump(); // Start pumping data
+    // Write the buffer to the response
+    res.write(buffer);
 
+    // End the response
+    res.end();
   } catch (error) {
-    console.error('Error during TTS:', error);
-    res.status(500).send('Error generating speech.');
-    res.end(); // Ensure the response is closed on error
+    console.error('Error streaming text to speech:', error);
+    res.status(500).send('Internal Server Error');
   }
-  /* const buffer = Buffer.from(await ttsResponse.arrayBuffer()); res.write(buffer);*/
 }
-
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
 app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
   try {
