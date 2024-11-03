@@ -3,6 +3,7 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const OpenAI = require("openai");
+const { Readable } = require('stream');
 
 const app = express();
 const upload = multer({ dest: '/tmp' });
