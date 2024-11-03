@@ -95,6 +95,8 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
               // Step 1: Transcribe audio
               const transcription = await transcribeAudio(newFilePath);
+              
+              console.log(transcription);
 
               // Step 2: Generate response using GPT based on the transcription
               const gptResponse = await getGPTResponse(transcription);
