@@ -39,8 +39,8 @@ async function transcribeAudio(audioStream) {
     model: 'whisper-1',
     response_format: "text",
     language: 'en',
-    filename: 'nova.m4a', 
-    content_type: 'audio/mpeg', 
+    filename: 'nova.m4a',
+    content_type: 'audio/mpeg',
   });
   return response.text;
 }
@@ -76,11 +76,14 @@ async function streamTextToSpeech(gptResponse, res) {
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
 app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
   try {
-    // Convert buffer to a Readable stream
-    const audioStream = new Readable();
-    audioStream.push(req.file.buffer);
-    audioStream.push(null); // End the stream
-    
+    if (!req.file) {
+      console.error('No file received in the request');
+      return res.status(400).json({ error: 'Audio file is required' });
+    }
+
+    // Convert buffer to a Readable stream using Readable.from
+    const audioStream = Readable.from(req.file.buffer);
+
     // Step 1: Transcribe audio
     const transcription = await transcribeAudio(audioStream);
 
