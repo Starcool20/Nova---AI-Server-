@@ -40,12 +40,12 @@ async function transcribeAudio(filePath) {
     response_format: "text",
     language: 'en',
   });
-  return response;
+  return response.text;
 }
 
 // Function to get GPT-generated response based on transcription
 async function getGPTResponse(transcription) {
-  const response = await openai.openai.chat.completions.create({
+  const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [{ role: 'user', content: transcription }],
   });
@@ -91,7 +91,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
                 return res.status(500).json({ error: 'Failed to rename file' });
               }
               
-              console.log('Uploaded file info:', newFilePath);
+              //console.log('Uploaded file info:', newFilePath);
 
               // Step 1: Transcribe audio
               const transcription = await transcribeAudio(newFilePath);
