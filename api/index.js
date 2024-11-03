@@ -37,10 +37,9 @@ async function transcribeAudio(filePath) {
   const response = await openai.audio.transcriptions.create({
     file: fs.createReadStream(filePath),
     model: 'whisper-1',
-    response_format: "text",
     language: 'en',
   });
-  return response.text;
+  return response.data.text;
 }
 
 // Function to get GPT-generated response based on transcription
