@@ -110,7 +110,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
       res.setHeader('Content-Type', 'audio/mpeg');
 
       // Step 4: Convert GPT response to TTS audio and stream it to the client
-      await streamTextToSpeech(gptResponse, res);
+      await streamTextToSpeech(gptResponse.message.content, res);
 
       // Cleanup: Delete the audio file after processing
       fs.unlink(newFilePath, (err) => {
