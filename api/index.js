@@ -56,15 +56,37 @@ async function getGPTResponse(transcription) {
 
 // Function to convert GPT response to speech with streaming
 async function streamTextToSpeech(gptResponse, res) {
-  const ttsResponse = await openai.audio.speech.create({
-    model: "tts-1",
-    voice: "nova",
-    input: gptResponse,
-    response_format: 'mp3',
-  });
+  try {
+    const ttsResponse = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "nova",
+      input: gptResponse,
+      response_format: 'mp3',
+    });
 
-const buffer = Buffer.from(await ttsResponse.arrayBuffer());
-res.write(buffer);
+    const reader = ttsResponse.getReader();
+
+    // Read the stream
+    const pump = async () => {
+      const { done, value } = await reader.read();
+      if (done) {
+        console.log('Streaming finished.');
+        res.end(); // Finalize the response when done
+        return;
+      }
+      res.write(value); // Write the chunk to the response
+      console.log('Chunk sent:', value.length); // Log the length of the sent chunk
+      pump(); // Continue reading
+    };
+
+    pump(); // Start pumping data
+
+  } catch (error) {
+    console.error('Error during TTS:', error);
+    res.status(500).send('Error generating speech.');
+    res.end(); // Ensure the response is closed on error
+  }
+  /* const buffer = Buffer.from(await ttsResponse.arrayBuffer()); res.write(buffer);*/
 }
 
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
@@ -110,7 +132,6 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
         if (err) console.error('Failed to delete file:', err);
       });
     });
-    res.status(200).end();
   } catch (error) {
     console.error(error);
     res.status(500).send('Error processing the audio file.');
