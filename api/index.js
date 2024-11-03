@@ -63,15 +63,8 @@ async function streamTextToSpeech(gptResponse, res) {
     response_format: 'mp3',
   });
 
-  // Stream each audio chunk to the client
-  ttsResponse.data.on('data', (chunk) => {
-    res.write(chunk);
-  });
-
-  // End the response once TTS generation completes
-  ttsResponse.data.on('end', () => {
-    res.status(200).end();
-  });
+const buffer = Buffer.from(await ttsResponse.arrayBuffer());
+res.write(buffer);
 }
 
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
@@ -117,6 +110,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
         if (err) console.error('Failed to delete file:', err);
       });
     });
+    res.status(200).end();
   } catch (error) {
     console.error(error);
     res.status(500).send('Error processing the audio file.');
