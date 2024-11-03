@@ -37,7 +37,6 @@ async function transcribeAudio(filePath) {
   const response = await openai.audio.transcriptions.create({
     file: fs.createReadStream(filePath),
     model: 'whisper-1',
-    language: 'en',
     temperature : '0.2', 
   });
   return response.text;
@@ -48,9 +47,9 @@ async function getGPTResponse(transcription) {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [{ role: 'user', content: transcription }],
-    frequency_penalty: '2.0',
-    presence_penalty: '2.0', 
-    temperature: '0.2', 
+    frequency_penalty: 2.0,
+    presence_penalty: 2.0, 
+    temperature: 0.2, 
   });
   return response.choices[0];
 }
