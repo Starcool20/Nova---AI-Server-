@@ -103,7 +103,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
               // Step 2: Generate response using GPT based on the transcription
               const gptResponse = await getGPTResponse(transcription);
               
-              console.log(gptResponse);
+              console.log(gptResponse.message.content);
               
               res.status(500).end();
 
