@@ -38,8 +38,9 @@ async function transcribeAudio(filePath) {
     file: fs.createReadStream(filePath),
     model: 'whisper-1',
     language: 'en',
+    temperature : '0.2', 
   });
-  return response;
+  return response.text;
 }
 
 // Function to get GPT-generated response based on transcription
@@ -47,8 +48,11 @@ async function getGPTResponse(transcription) {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [{ role: 'user', content: transcription }],
+    frequency_penalty: '2.0',
+    presence_penalty: '2.0', 
+    temperature: '0.2', 
   });
-  return response.choices[0].message;
+  return response.choices[0];
 }
 
 // Function to convert GPT response to speech with streaming
@@ -99,6 +103,10 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
               // Step 2: Generate response using GPT based on the transcription
               const gptResponse = await getGPTResponse(transcription);
+              
+              console.log(gptResponse);
+              
+              res.status(500).end();
 
               // Step 3: Set response headers for streaming audio
               res.setHeader('Content-Type', 'audio/mpeg');
