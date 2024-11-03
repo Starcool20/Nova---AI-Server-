@@ -32,9 +32,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 // Function to transcribe audio
-async function transcribeAudio(filePath) {
+async function transcribeAudio(audioBuffer) {
   const response = await openai.audio.transcriptions.create({
-    file: fs.createReadStream(filePath),
+    file: audioBuffer,
     model: 'whisper-1',
     response_format: "text",
   });
@@ -72,18 +72,10 @@ async function streamTextToSpeech(gptResponse, res) {
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
 app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
   try {
-    const audioFilePath = req.file.path;
-    
-    const newFilePath = path.join(path.dirname(audioFilePath), `${path.basename(audioFilePath, path.extname(audioFilePath))}.m4a`);
-    
-    fs.rename(audioFilePath, newFilePath, async (err) => { // Add async here
-      if (err) {
-        console.error('Error renaming file:', err);
-        return res.status(500).send('Error processing the audio file.');
-      }
+    const audioBuffer = req.file.buffer;
 
     // Step 1: Transcribe audio
-    const transcription = await transcribeAudio(audioFilePath);
+    const transcription = await transcribeAudio(audioBuffer);
 
     // Step 2: Generate response using GPT based on the transcription
     const gptResponse = await getGPTResponse(transcription);
@@ -98,7 +90,6 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     fs.unlink(newFilePath, (err) => {
         if (err) console.error('Failed to delete file:', err);
       });
-    });
   } catch (error) {
     console.error(error);
     res.status(500).send('Error processing the audio file.');
