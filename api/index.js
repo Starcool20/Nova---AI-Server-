@@ -32,11 +32,13 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 // Function to transcribe audio
-async function transcribeAudio(audioBuffer) {
+async function transcribeAudio(audioStream) {
   const response = await openai.audio.transcriptions.create({
-    file: audioBuffer,
+    file: audioStream,
     model: 'whisper-1',
     response_format: "text",
+    language: 'en',
+    filename: 'nova.m4a', 
     content_type: 'audio/mpeg', 
   });
   return response.text;
@@ -54,10 +56,10 @@ async function getGPTResponse(transcription) {
 // Function to convert GPT response to speech with streaming
 async function streamTextToSpeech(gptResponse, res) {
   const ttsResponse = await openai.audio.speech.create({
-  model: "tts-1",
-  voice: "alloy",
-  input: gptResponse,
-});
+    model: "tts-1",
+    voice: "alloy",
+    input: gptResponse,
+  });
 
   // Stream each audio chunk to the client
   ttsResponse.data.on('data', (chunk) => {
@@ -73,10 +75,13 @@ async function streamTextToSpeech(gptResponse, res) {
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
 app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
   try {
-    const audioBuffer = req.file.buffer;
-
+    // Convert buffer to a Readable stream
+    const audioStream = new Readable();
+    audioStream.push(req.file.buffer);
+    audioStream.push(null); // End the stream
+    
     // Step 1: Transcribe audio
-    const transcription = await transcribeAudio(audioBuffer);
+    const transcription = await transcribeAudio(audioStream);
 
     // Step 2: Generate response using GPT based on the transcription
     const gptResponse = await getGPTResponse(transcription);
@@ -89,8 +94,8 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
     // Cleanup: Delete the audio file after processing
     fs.unlink(newFilePath, (err) => {
-        if (err) console.error('Failed to delete file:', err);
-      });
+      if (err) console.error('Failed to delete file:', err);
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send('Error processing the audio file.');
