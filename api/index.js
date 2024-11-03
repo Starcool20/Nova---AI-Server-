@@ -40,7 +40,7 @@ async function transcribeAudio(filePath) {
     response_format: "text",
     language: 'en',
   });
-  return response.text;
+  return response;
 }
 
 // Function to get GPT-generated response based on transcription
