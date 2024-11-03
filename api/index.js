@@ -91,10 +91,10 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
                 return res.status(500).json({ error: 'Failed to rename file' });
               }
               
-              console.log('Uploaded file info:', req.file);
+              console.log('Uploaded file info:', newFilePath);
 
               // Step 1: Transcribe audio
-              const transcription = await transcribeAudio(filePath);
+              const transcription = await transcribeAudio(newFilePath);
 
               // Step 2: Generate response using GPT based on the transcription
               const gptResponse = await getGPTResponse(transcription);
