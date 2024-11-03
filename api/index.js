@@ -37,6 +37,7 @@ async function transcribeAudio(audioBuffer) {
     file: audioBuffer,
     model: 'whisper-1',
     response_format: "text",
+    content_type: 'audio/mpeg', 
   });
   return response.text;
 }
