@@ -39,7 +39,7 @@ async function transcribeAudio(filePath) {
     model: 'whisper-1',
     language: 'en',
   });
-  return response.data.text;
+  return response;
 }
 
 // Function to get GPT-generated response based on transcription
