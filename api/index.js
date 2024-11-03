@@ -39,8 +39,6 @@ async function transcribeAudio(filePath) {
     model: 'whisper-1',
     response_format: "text",
     language: 'en',
-    filename: 'nova.m4a',
-    content_type: 'audio/mpeg',
   });
   return response.text;
 }
@@ -85,7 +83,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     console.log('Uploaded file info:', req.file);
 
     // Construct the path to the uploaded file
-    const filePath = path.join('/tmp', req.file.filename);
+    const filePath = path.join('/tmp/', req.file.filename);
 
     // Step 1: Transcribe audio
     const transcription = await transcribeAudio(filePath);
