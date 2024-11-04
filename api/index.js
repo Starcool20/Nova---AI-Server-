@@ -135,7 +135,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
       // Step 3: Set response headers for streaming audio
       res.setHeader('Content-Type', 'audio/mpeg');
-
+      
       // Step 2: Generate response using GPT based on the transcription
       const gptResponse = await getGPTResponse(transcription, res);
 
