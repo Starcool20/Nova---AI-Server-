@@ -53,11 +53,11 @@ async function getGPTResponse(transcription) {
 
 1. Analyze the input message.
 2. Identify if it includes any request or directive indicating a halt, stop, or shutdown.
-3. If such an instruction is present, output the word "Stop."
+3. If such an instruction is present, output the word "Stop. else just be an assistant then"
 
 # Output Format
 
-- If the instruction to stop is found, output: 'Stop'.` },
+- If the instruction to stop is found, output: 'Stop'. or be an assistant where it doesn't apply.` },
       { role: 'user', content: transcription }
     ],
     frequency_penalty: 2.0,
