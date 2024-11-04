@@ -43,11 +43,14 @@ async function transcribeAudio(filePath) {
 }
 
 // Function to get GPT-generated response based on transcription
-async function getGPTResponse(transcription) {
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages: [
-      { role: 'system', content: `Your name is now nova and you are to do this. Identify if the user input contains any instruction to stop or shut down, and if so, output the word "Stop.".
+async function getGPTResponse(transcription, res) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-audio-preview',
+      modalities: ["text", "audio"],
+      audio: { voice: "nova", format: "mp3" },
+      messages: [
+        { role: 'system', content: `Your name is now nova and you are to do this. Identify if the user input contains any instruction to stop or shut down, and if so, output the word "Stop.".
       
 # Steps
 
@@ -58,14 +61,28 @@ async function getGPTResponse(transcription) {
 # Output Format
 
 - If the instruction to stop is found, output: 'Stop'. or be an assistant where it doesn't apply.` },
-      { role: 'user', content: transcription }
+        { role: 'user', content: transcription }
     ],
-    frequency_penalty: 2.0,
-    presence_penalty: 2.0,
-    temperature: 0.2,
-    max_completion_tokens: 1000,
-  });
-  return response.choices[0];
+      frequency_penalty: 2.0,
+      presence_penalty: 2.0,
+      temperature: 0.2,
+      max_completion_tokens: 1000,
+    });
+
+    console.log(response);
+
+    // Convert the response to a buffer
+    const buffer = Buffer.from(await response.choices[0].message.audio.data.arrayBuffer());
+
+    // Write the buffer to the response
+    res.write(buffer);
+
+    // End the response
+    res.end();
+  } catch (e) {
+    console.error('Error streaming text to speech:', e);
+    res.status(500).send('Internal Server Error');
+  }
 }
 
 // Function to convert GPT response to speech with streaming
@@ -84,17 +101,9 @@ async function streamTextToSpeech(gptResponse, res) {
       throw new Error('Invalid TTS response');
     }
 
-    // Convert the response to a buffer
-    const buffer = Buffer.from(await ttsResponse.arrayBuffer());
 
-    // Write the buffer to the response
-    res.write(buffer);
-
-    // End the response
-    res.end();
   } catch (error) {
-    console.error('Error streaming text to speech:', error);
-    res.status(500).send('Internal Server Error');
+
   }
 }
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
@@ -124,24 +133,13 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
       console.log(transcription);
 
-      // Step 2: Generate response using GPT based on the transcription
-      const gptResponse = await getGPTResponse(transcription);
-
-      console.log(gptResponse.message.content);
-
-      if (gptResponse.message.content === 'Stop' || gptResponse.message.console === 'stop') {
-        fs.unlink(newFilePath, (err) => {
-          if (err) console.error('Failed to delete file:', err);
-        });
-        res.setHeader('Content-Type', 'text/plain');
-        res.status(200).send('stop');
-      }
-
       // Step 3: Set response headers for streaming audio
       res.setHeader('Content-Type', 'audio/mpeg');
 
-      // Step 4: Convert GPT response to TTS audio and stream it to the client
-      await streamTextToSpeech(gptResponse.message.content, res);
+      // Step 2: Generate response using GPT based on the transcription
+      const gptResponse = await getGPTResponse(transcription, res);
+
+     // console.log(gptResponse.message.content);
 
       // Cleanup: Delete the audio file after processing
       fs.unlink(newFilePath, (err) => {
