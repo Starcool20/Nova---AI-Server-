@@ -47,7 +47,7 @@ async function getGPTResponse(transcription) {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
-      { role: 'system', content: `Your name is now nova and you are to do this. Identify if the user input contains any instruction to stop or shut down, and if so, output the word "Stop." If the input does not contain such an instruction, no output is needed.
+      { role: 'system', content: `Your name is now nova and you are to do this. Identify if the user input contains any instruction to stop or shut down, and if so, output the word "Stop.".
       
 # Steps
 
@@ -57,8 +57,7 @@ async function getGPTResponse(transcription) {
 
 # Output Format
 
-- If the instruction to stop is found, output: 'Stop'
-- If no such instruction is found, provide no output.` },
+- If the instruction to stop is found, output: 'Stop'.` },
       { role: 'user', content: transcription }
     ],
     frequency_penalty: 2.0,
