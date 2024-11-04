@@ -133,6 +133,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
         fs.unlink(newFilePath, (err) => {
           if (err) console.error('Failed to delete file:', err);
         });
+        res.setHeader('Content-Type', 'text/plain');
         res.status(200).send('stop');
       }
 
