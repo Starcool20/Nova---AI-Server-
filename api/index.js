@@ -46,10 +46,25 @@ async function transcribeAudio(filePath) {
 async function getGPTResponse(transcription) {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
-    messages: [{ role: 'user', content: transcription }],
+    messages: [
+      { role: 'system', content: `Your name is now nova and you are to do this. Identify if the user input contains any instruction to stop or shut down, and if so, output the word "Stop." If the input does not contain such an instruction, no output is needed.
+      
+# Steps
+
+1. Analyze the input message.
+2. Identify if it includes any request or directive indicating a halt, stop, or shutdown.
+3. If such an instruction is present, output the word "Stop."
+
+# Output Format
+
+- If the instruction to stop is found, output: 'Stop'
+- If no such instruction is found, provide no output.` },
+      { role: 'user', content: transcription }
+    ],
     frequency_penalty: 2.0,
     presence_penalty: 2.0,
     temperature: 0.2,
+    max_completion_tokens: 1000,
   });
   return response.choices[0];
 }
@@ -114,6 +129,13 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
       const gptResponse = await getGPTResponse(transcription);
 
       console.log(gptResponse.message.content);
+
+      if (gptResponse.message.content === 'Stop' || gptResponse.message.console === 'stop') {
+        fs.unlink(newFilePath, (err) => {
+          if (err) console.error('Failed to delete file:', err);
+        });
+        res.status(200).send('stop');
+      }
 
       // Step 3: Set response headers for streaming audio
       res.setHeader('Content-Type', 'audio/mpeg');
