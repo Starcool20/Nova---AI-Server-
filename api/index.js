@@ -72,7 +72,7 @@ async function getGPTResponse(transcription, res) {
       
       // console.log(response.delta);
 
-      const iterator = stream.iterator();
+      const iterator = response.iterator();
 
         // Iterate through the async generator
         for await (const data of iterator) {
