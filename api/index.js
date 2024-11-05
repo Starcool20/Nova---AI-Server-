@@ -69,11 +69,7 @@ async function getGPTResponse(transcription, res) {
       max_completion_tokens: 1000,
     });
 
-    console.log(response.choices[0].message);
-    
-    const audio = response.choices[0].message.audio.data;
-    
-    console.log(audio);
+    const audio = base64ToArrayBuffer(response.choices[0].message.audio.data);
 
     // Convert the response to a buffer
     const buffer = Buffer.from(await audio.arrayBuffer());
@@ -139,11 +135,11 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
       // Step 3: Set response headers for streaming audio
       res.setHeader('Content-Type', 'audio/mpeg');
-      
+
       // Step 2: Generate response using GPT based on the transcription
       const gptResponse = await getGPTResponse(transcription, res);
 
-     // console.log(gptResponse.message.content);
+      // console.log(gptResponse.message.content);
 
       // Cleanup: Delete the audio file after processing
       fs.unlink(newFilePath, (err) => {
@@ -155,6 +151,16 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     res.status(500).send('Error processing the audio file.');
   }
 });
+
+function base64ToArrayBuffer(base64) {
+  const binaryString = atob(base64); // Decode base64 to binary string
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
 
 // Start server (for local testing only; Vercel will handle deployment)
 const PORT = process.env.PORT || 3000;
