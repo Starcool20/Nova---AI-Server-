@@ -50,23 +50,13 @@ async function getGPTResponse(transcription, res) {
       modalities: ["text", "audio"],
       audio: { voice: "alloy", format: "mp3" },
       messages: [
-        { role: 'system', content: `Your name is now nova and you are to do this. Identify if the user input contains any instruction to stop or shut down, and if so, output the word "Stop.".
-      
-# Steps
-
-1. Analyze the input message.
-2. Identify if it includes any request or directive indicating a halt, stop, or shutdown.
-3. If such an instruction is present, output the word "Stop. else just be an assistant then"
-
-# Output Format
-
-- If the instruction to stop is found, output: 'Stop'. or be an assistant where it doesn't apply.` },
+        { role: 'system', content: `Your name is now nova and you are to do this.` },
         { role: 'user', content: transcription }
     ],
       frequency_penalty: 2.0,
       presence_penalty: 2.0,
       temperature: 0.2,
-      max_completion_tokens: 1000,
+      max_completion_tokens: 4095,
     });
 
     // Decode the base64 data to an ArrayBuffer
