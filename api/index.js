@@ -77,8 +77,8 @@ async function getGPTResponse(transcription, res) {
     // Iterate through the async generator
     for await (const data of iterator) {
       console.log(data); // Output each piece of data (e.g., 'data1', 'data2', ...)
-      console.log(data.delta[0]);
-      const audio = base64ToArrayBuffer(data.delta[0].message.audio.data);
+      console.log(data.delta);
+      const audio = base64ToArrayBuffer(data.delta.message.audio.data);
 
       // Convert ArrayBuffer to Buffer directly
       const buffer = Buffer.from(audio);
