@@ -70,9 +70,11 @@ async function getGPTResponse(transcription, res) {
     });
 
     console.log(response);
+    
+    const audio = response.choices[0].message.audio.data;
 
     // Convert the response to a buffer
-    const buffer = Buffer.from(await response.choices[0].message.audio.data.arrayBuffer());
+    const buffer = Buffer.from(await audio.arrayBuffer());
 
     // Write the buffer to the response
     res.write(buffer);
