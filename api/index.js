@@ -69,9 +69,11 @@ async function getGPTResponse(transcription, res) {
       max_completion_tokens: 1000,
     });
 
-    console.log(response);
+    console.log(response.choices[0].message);
     
     const audio = response.choices[0].message.audio.data;
+    
+    console.log(audio);
 
     // Convert the response to a buffer
     const buffer = Buffer.from(await audio.arrayBuffer());
