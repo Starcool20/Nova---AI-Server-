@@ -48,7 +48,7 @@ async function getGPTResponse(transcription, res) {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-audio-preview',
       modalities: ["text", "audio"],
-      audio: { voice: "alloy", format: "pcm16" },
+      audio: { voice: "alloy", format: "mp3" },
       messages: [
         { role: 'system', content: `Your name is now nova and you are to do this. Identify if the user input contains any instruction to stop or shut down, and if so, output the word "Stop.".
       
@@ -67,27 +67,31 @@ async function getGPTResponse(transcription, res) {
       presence_penalty: 2.0,
       temperature: 0.2,
       max_completion_tokens: 1000,
-      stream: true,
     });
 
-    // console.log(response.delta);
+    // Decode the base64 data to an ArrayBuffer
+    const audio = base64ToArrayBuffer(response.choices[0].message.audio.data);
 
-    const iterator = response.iterator();
+    // Convert ArrayBuffer to Buffer
+    const buffer = Buffer.from(audio);
 
-    // Iterate through the async generator
-    for await (const data of iterator) {
-      console.log(data); // Output each piece of data (e.g., 'data1', 'data2', ...)
-      console.log(data.choices[0].delta);
-      const audio = base64ToArrayBuffer(data.choices[0].delta.message.audio.data);
+    // Define chunk size (e.g., 1024 bytes)
+    const chunkSize = 1024;
+    let offset = 0;
 
-      // Convert ArrayBuffer to Buffer directly
-      const buffer = Buffer.from(audio);
+    // Iteratively write chunks to the response
+    while (offset < buffer.length) {
+      // Get the next chunk of data
+      const chunk = buffer.slice(offset, offset + chunkSize);
 
-      // Write the buffer to the response
-      res.write(buffer);
+      // Write the chunk to the response
+      res.write(chunk);
+
+      // Update the offset to the next chunk position
+      offset += chunkSize;
     }
 
-    // End the response
+    // End the response once all chunks are sent
     res.end();
   } catch (e) {
     console.error('Error streaming text to speech:', e);
