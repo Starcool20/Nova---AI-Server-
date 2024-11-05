@@ -48,7 +48,7 @@ async function getGPTResponse(transcription, res) {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-audio-preview',
       modalities: ["text", "audio"],
-      audio: { voice: "alloy", format: "mp3" },
+      audio: { voice: "alloy", format: "pcm16" },
       messages: [
         { role: 'system', content: `Your name is now nova and you are to do this. Identify if the user input contains any instruction to stop or shut down, and if so, output the word "Stop.".
       
