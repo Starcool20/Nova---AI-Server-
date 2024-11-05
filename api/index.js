@@ -48,7 +48,7 @@ async function getGPTResponse(transcription, res) {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-audio-preview',
       modalities: ["text", "audio"],
-      audio: { voice: "nova", format: "mp3" },
+      audio: { voice: "alloy", format: "mp3" },
       messages: [
         { role: 'system', content: `Your name is now nova and you are to do this. Identify if the user input contains any instruction to stop or shut down, and if so, output the word "Stop.".
       
@@ -67,12 +67,14 @@ async function getGPTResponse(transcription, res) {
       presence_penalty: 2.0,
       temperature: 0.2,
       max_completion_tokens: 1000,
+      stream: true, 
     });
 
+    // Decode the base64 data to an ArrayBuffer
     const audio = base64ToArrayBuffer(response.choices[0].message.audio.data);
 
-    // Convert the response to a buffer
-    const buffer = Buffer.from(await audio.arrayBuffer());
+    // Convert ArrayBuffer to Buffer directly
+    const buffer = Buffer.from(audio);
 
     // Write the buffer to the response
     res.write(buffer);
