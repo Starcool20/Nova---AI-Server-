@@ -50,12 +50,12 @@ async function getGPTResponse(transcription, res) {
       modalities: ["text", "audio"],
       audio: { voice: "alloy", format: "mp3" },
       messages: [
-        { role: 'system', content: `Your name is now nova and you are to do this.` },
+        { role: 'system', content: `Your name is now nova and you are to help the user` },
         { role: 'user', content: transcription }
     ],
       frequency_penalty: 2.0,
       presence_penalty: 2.0,
-      temperature: 0.2,
+      temperature: 0.4,
       max_completion_tokens: 4095,
     });
 
@@ -65,21 +65,7 @@ async function getGPTResponse(transcription, res) {
     // Convert ArrayBuffer to Buffer
     const buffer = Buffer.from(audio);
 
-    // Define chunk size (e.g., 1024 bytes)
-    const chunkSize = 1024;
-    let offset = 0;
-
-    // Iteratively write chunks to the response
-    while (offset < buffer.length) {
-      // Get the next chunk of data
-      const chunk = buffer.slice(offset, offset + chunkSize);
-
-      // Write the chunk to the response
-      res.write(chunk);
-
-      // Update the offset to the next chunk position
-      offset += chunkSize;
-    }
+   res.write(buffer);
 
     // End the response once all chunks are sent
     res.end();
