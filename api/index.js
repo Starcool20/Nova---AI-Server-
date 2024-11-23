@@ -32,30 +32,32 @@ const handler = (req, res) => {
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-// Function to transcribe audio
-async function transcribeAudio(filePath) {
-  const response = await openai.audio.transcriptions.create({
-    file: fs.createReadStream(filePath),
-    model: 'whisper-1',
-    temperature: '0.2',
-  });
-  return response.text;
-}
 
 // Function to get GPT-generated response based on transcription
-async function getGPTResponse(transcription, res) {
+async function getGPTResponse(audioData, res) {
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-audio-preview',
       modalities: ["text", "audio"],
       audio: { voice: "alloy", format: "mp3" },
       messages: [
-        { role: 'system', content: `Your name is now nova and you are to help the user` },
-        { role: 'user', content: transcription }
+        {
+          role: "user",
+          content: [
+            { type: "text", "text": "You are an assistant named Nova, respond as assistant according to the recording." },
+            {
+              type: "input_audio",
+              input_audio: {
+                data: audioData,
+                format: "m4a"
+              }
+            }
+          ]
+        }
     ],
       frequency_penalty: 2.0,
       presence_penalty: 2.0,
-      temperature: 0.4,
+      temperature: 1,
       max_completion_tokens: 4095,
     });
 
@@ -65,7 +67,7 @@ async function getGPTResponse(transcription, res) {
     // Convert ArrayBuffer to Buffer
     const buffer = Buffer.from(audio);
 
-   res.write(buffer);
+    res.write(buffer);
 
     // End the response once all chunks are sent
     res.end();
@@ -75,27 +77,21 @@ async function getGPTResponse(transcription, res) {
   }
 }
 
-// Function to convert GPT response to speech with streaming
-async function streamTextToSpeech(gptResponse, res) {
+function audioFileToBase64(filePath) {
   try {
-    // Request TTS from OpenAI API
-    const ttsResponse = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: "nova",
-      input: gptResponse,
-      response_format: 'mp3',
-    });
-
-    // Check if response is valid
-    if (!ttsResponse || !ttsResponse.arrayBuffer) {
-      throw new Error('Invalid TTS response');
-    }
-
-
+    // Read the file as a binary buffer
+    const fileBuffer = fs.readFileSync(filePath);
+    // Convert the buffer to a Base64 string
+    const base64String = fileBuffer.toString('base64');
+    return base64String;
   } catch (error) {
-
+    console.error('Error reading the file:', error);
+    throw error;
   }
 }
+
+
+
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
 app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
   try {
@@ -116,20 +112,14 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
         return res.status(500).json({ error: 'Failed to rename file' });
       }
 
-      //console.log('Uploaded file info:', newFilePath);
-
-      // Step 1: Transcribe audio
-      const transcription = await transcribeAudio(newFilePath);
-
-      console.log(transcription);
-
+      const dataAudio = audioFileToBase64(newFilePath);
       // Step 3: Set response headers for streaming audio
       res.setHeader('Content-Type', 'audio/mpeg');
 
       // Step 2: Generate response using GPT based on the transcription
-      const gptResponse = await getGPTResponse(transcription, res);
+      const gptResponse = await getGPTResponse(dataAudio, res);
 
-      // console.log(gptResponse.message.content);
+      console.log(gptResponse.message.content);
 
       // Cleanup: Delete the audio file after processing
       fs.unlink(newFilePath, (err) => {
