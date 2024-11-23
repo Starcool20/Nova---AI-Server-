@@ -78,7 +78,7 @@ async function getGPTResponse(audioData, res) {
       frequency_penalty: 2.0,
       presence_penalty: 2.0,
       temperature: 1,
-      max_completion_tokens: 4095,
+      max_completion_tokens: 100,
     });
 
     // Decode the base64 data to an ArrayBuffer
