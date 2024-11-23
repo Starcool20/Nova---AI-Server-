@@ -77,7 +77,7 @@ async function getGPTResponse(audioData, res) {
       frequency_penalty: 2.0,
       presence_penalty: 2.0,
       temperature: 0.2,
-      max_completion_tokens: 4095,
+      max_completion_tokens: 200,
     });
 
     // Decode the base64 data to an ArrayBuffer
@@ -141,8 +141,6 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
     // Step 2: Generate response using GPT based on the transcription
     const gptResponse = await getGPTResponse(dataAudio, res);
-
-    console.log(gptResponse);
 
     // Cleanup: Delete the audio file after processing
     fs.unlink(newFilePath, (err) => {
