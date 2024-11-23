@@ -34,6 +34,7 @@
     "etag": "^1.8.1",
     "event-target-shim": "^5.0.1",
     "express": "^4.21.1",
+    "ffmpeg-node": "^0.0.2",
     "finalhandler": "^1.3.1",
     "fluent-ffmpeg": "^2.1.3",
     "form-data": "^4.0.1",
