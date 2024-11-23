@@ -34,6 +34,7 @@ const handler = (req, res) => {
 // Initialize OpenAI API with API key
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  baseURL: 'https://api.sambanova.ai/v1'
 });
 
 function convertAudio(inputPath, outputPath, format) {
@@ -56,14 +57,14 @@ function convertAudio(inputPath, outputPath, format) {
 async function getGPTResponse(audioData, res) {
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-audio-preview',
+      model: 'Meta-Llama-3.1-8B-Instruct',
       modalities: ["text", "audio"],
       audio: { voice: "alloy", format: "mp3" },
       messages: [
         {
           role: "user",
           content: [
-            { type: "text", "text": "You are an assistant named Nova, respond as assistant according to the recording." },
+            { type: "text", "text": "You are an assistant named Nova, respond as an assistant according to the recording." },
             {
               type: "input_audio",
               input_audio: {
