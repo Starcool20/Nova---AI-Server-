@@ -49,7 +49,7 @@ async function getGPTResponse(audioData, res) {
               type: "input_audio",
               input_audio: {
                 data: audioData,
-                format: "mp3"
+                format: "wav"
               }
             }
           ]
@@ -102,7 +102,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
     const originalFilePath = path.join('/tmp', req.file.filename);
 
-    const newFilename = `nova.mp3`; // Customize your new filename as needed
+    const newFilename = `nova.wav`; // Customize your new filename as needed
     const newFilePath = path.join('/tmp', newFilename);
 
     // Rename the file
