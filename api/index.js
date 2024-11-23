@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
 const OpenAI = require("openai");
@@ -32,6 +33,22 @@ const handler = (req, res) => {
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+function convertAudio(inputPath, outputPath, format) {
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputPath)
+      .toFormat(format) // 'mp3' or 'wav'
+      .on('error', (err) => {
+        console.error('Error during conversion:', err.message);
+        reject(err);
+      })
+      .on('end', () => {
+        console.log('Conversion finished:', outputPath);
+        resolve(outputPath);
+      })
+      .save(outputPath);
+  });
+}
 
 // Function to get GPT-generated response based on transcription
 async function getGPTResponse(audioData, res) {
@@ -102,29 +119,32 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
     const originalFilePath = path.join('/tmp', req.file.filename);
 
-    const newFilename = `nova.wav`; // Customize your new filename as needed
-    const newFilePath = path.join('/tmp', newFilename);
+    const outputPath = path.join('/tmp', 'nova.mp4');
 
-    // Rename the file
-    fs.rename(originalFilePath, newFilePath, async (err) => {
+    const newFilePath = path.join('/tmp', 'nova.mp3');
+
+    fs.writeFile(originalFilePath, outputPath, (err) => {
       if (err) {
-        console.error('Error renaming file:', err);
-        return res.status(500).json({ error: 'Failed to rename file' });
+        console.error('Error writing to file:', err);
+      } else {
+        console.log('File written successfully!');
       }
+    });
 
-      const dataAudio = audioFileToBase64(newFilePath);
-      // Step 3: Set response headers for streaming audio
-      res.setHeader('Content-Type', 'audio/mpeg');
+    await convertAudio(outputPath, newFilePath, 'mp3');
 
-      // Step 2: Generate response using GPT based on the transcription
-      const gptResponse = await getGPTResponse(dataAudio, res);
+    const dataAudio = audioFileToBase64(newFilePath);
+    // Step 3: Set response headers for streaming audio
+    res.setHeader('Content-Type', 'audio/mpeg');
 
-      console.log(gptResponse);
+    // Step 2: Generate response using GPT based on the transcription
+    const gptResponse = await getGPTResponse(dataAudio, res);
 
-      // Cleanup: Delete the audio file after processing
-      fs.unlink(newFilePath, (err) => {
-        if (err) console.error('Failed to delete file:', err);
-      });
+    console.log(gptResponse);
+
+    // Cleanup: Delete the audio file after processing
+    fs.unlink(newFilePath, (err) => {
+      if (err) console.error('Failed to delete file:', err);
     });
   } catch (error) {
     console.error(error);
