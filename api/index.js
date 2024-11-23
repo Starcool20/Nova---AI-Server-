@@ -119,7 +119,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
       // Step 2: Generate response using GPT based on the transcription
       const gptResponse = await getGPTResponse(dataAudio, res);
 
-      console.log(gptResponse.message.content);
+      console.log(gptResponse);
 
       // Cleanup: Delete the audio file after processing
       fs.unlink(newFilePath, (err) => {
