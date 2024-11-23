@@ -68,7 +68,7 @@ async function getGPTResponse(audioData, res) {
               type: "input_audio",
               input_audio: {
                 data: audioData,
-                format: "wav"
+                format: "mp3"
               }
             }
           ]
