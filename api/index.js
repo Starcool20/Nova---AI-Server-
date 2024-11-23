@@ -125,7 +125,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
     const newFilePath = path.join('/tmp', 'nova.mp3');
 
-    fs.writeFile(originalFilePath, outputPath, (err) => {
+    fs.rename(originalFilePath, outputPath, (err) => {
       if (err) {
         console.error('Error writing to file:', err);
       } else {
