@@ -6,5 +6,8 @@
       "maxDuration": 60
     }
   },
+   "includeFiles": [
+    "bin/ffmpeg"
+  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }] 
 }

@@ -7,6 +7,8 @@ const OpenAI = require("openai");
 const { Readable } = require('stream');
 
 const app = express();
+const ffmpegPath = path.join(__dirname, 'bin', 'ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 const upload = multer({ dest: '/tmp' });
 
 // Enable CORS
