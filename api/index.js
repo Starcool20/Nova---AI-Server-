@@ -61,18 +61,11 @@ async function getGPTResponse(audioData, res) {
       audio: { voice: "alloy", format: "mp3" },
       messages: [
         {
-          role: "system",
-          content: [
-            {
-              type: "text",
-              text: "You are an assistant named Nova, respond as an assistant according to the recording or Output {no speech} if there isn't no human voice."
-        }
-      ],
           role: "user",
           content: [
             {
               type: "text",
-              text: ""
+              text: "You are an assistant named Nova, respond as an assistant according to the recording or Output {no speech} if there isn't no human voice."
             },
             {
               type: "input_audio",
