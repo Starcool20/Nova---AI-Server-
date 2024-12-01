@@ -63,7 +63,7 @@ async function getGPTResponse(audioData, res) {
         {
           role: "user",
           content: [
-            { type: "text", "text": "You are an assistant named Nova, respond as an assistant according to the recording or output {no speech} if there isn't no human voice." },
+            { type: "text", "text": "Output {no speech}" },
             {
               type: "input_audio",
               input_audio: {
@@ -83,7 +83,15 @@ async function getGPTResponse(audioData, res) {
     // Decode the base64 data to an ArrayBuffer
     const audio = base64ToArrayBuffer(response.choices[0].message.audio.data);
     
-    console.log(response.choices[0].message.audio.transcript);
+    const text = response.choices[0].message.audio.transcript;
+    
+    if(text.toLowerCase() === 'no speech'){
+      res.setHeader('Content-Type', 'text/plain');
+      res.status(200).send(text);
+      return;
+    }
+    
+    res.setHeader('Content-Type', 'audio/mpeg');
 
     // Convert ArrayBuffer to Buffer
     const buffer = Buffer.from(audio);
@@ -91,7 +99,7 @@ async function getGPTResponse(audioData, res) {
     res.write(buffer);
 
     // End the response once all chunks are sent
-    res.end();
+    res.status(200).end();
   } catch (e) {
     console.error('Error streaming text to speech:', e);
     res.status(500).send('Internal Server Error');
@@ -138,8 +146,6 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     await convertAudio(outputPath, newFilePath, 'mp3');
 
     const dataAudio = audioFileToBase64(newFilePath);
-    // Step 3: Set response headers for streaming audio
-    res.setHeader('Content-Type', 'audio/mpeg');
 
     // Step 2: Generate response using GPT based on the transcription
     const gptResponse = await getGPTResponse(dataAudio, res);
