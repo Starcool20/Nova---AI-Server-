@@ -83,7 +83,7 @@ async function getGPTResponse(audioData, res) {
     // Decode the base64 data to an ArrayBuffer
     const audio = base64ToArrayBuffer(response.choices[0].message.audio.data);
     
-    console.log(response.choices[0].message.audio);
+    console.log(response.choices[0].message.audio.transcript);
 
     // Convert ArrayBuffer to Buffer
     const buffer = Buffer.from(audio);
