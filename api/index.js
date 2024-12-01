@@ -86,7 +86,7 @@ async function getGPTResponse(audioData, res) {
     const text = response.choices[0].message.audio.transcript;
     console.log(text);
     
-    if(text.toLowerCase() === 'no speech'){
+    if(text.toLowerCase() === '{no speech}'){
       res.setHeader('Content-Type', 'text/plain');
       res.status(200).send(text);
       return;
