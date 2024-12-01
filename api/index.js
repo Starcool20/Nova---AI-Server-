@@ -61,9 +61,19 @@ async function getGPTResponse(audioData, res) {
       audio: { voice: "alloy", format: "mp3" },
       messages: [
         {
+          role: "system",
+          content: [
+            {
+              type: "text",
+              text: "You are an assistant named Nova, respond as an assistant according to the recording or Output {no speech} if there isn't no human voice."
+        }
+      ],
           role: "user",
           content: [
-            { type: "text", "text": "Output {no speech} in any recording" },
+            {
+              type: "text",
+              text: ""
+            },
             {
               type: "input_audio",
               input_audio: {
@@ -82,16 +92,16 @@ async function getGPTResponse(audioData, res) {
 
     // Decode the base64 data to an ArrayBuffer
     const audio = base64ToArrayBuffer(response.choices[0].message.audio.data);
-    
+
     const text = response.choices[0].message.audio.transcript;
     console.log(text);
-    
-    if(text.toLowerCase() === '{no speech}'){
+
+    if (text.toLowerCase() === '{no speech}') {
       res.setHeader('Content-Type', 'text/plain');
       res.status(200).send(text);
       return;
     }
-    
+
     res.setHeader('Content-Type', 'audio/mpeg');
 
     // Convert ArrayBuffer to Buffer
