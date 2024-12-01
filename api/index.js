@@ -63,7 +63,7 @@ async function getGPTResponse(audioData, res) {
         {
           role: "user",
           content: [
-            { type: "text", "text": "Output {no speech}" },
+            { type: "text", "text": "Output {no speech} in any recording" },
             {
               type: "input_audio",
               input_audio: {
