@@ -53,7 +53,7 @@ function convertAudio(inputPath, outputPath, format) {
 }
 
 // Function to get GPT-generated response based on transcription
-async function getGPTResponse(audioData, res) {
+async function getGPTResponse(audioData, res, transcription) {
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-audio-preview',
@@ -65,7 +65,7 @@ async function getGPTResponse(audioData, res) {
           content: [
             {
               type: "text",
-              text: "You are an assistant named Nova, respond as an assistant according to the recording or Output {no speech} if there isn't no human voice."
+              text: "You are an assistant named Nova, respond as an assistant according to the recording or Output:- no speech. if there isn't no human voice."
             },
             {
               type: "input_audio",
@@ -83,27 +83,23 @@ async function getGPTResponse(audioData, res) {
       max_completion_tokens: 200,
     });
 
-    // Decode the base64 data to an ArrayBuffer
-    const audio = base64ToArrayBuffer(response.choices[0].message.audio.data);
-
     const text = response.choices[0].message.audio.transcript;
     console.log(text);
 
-    if (text.toLowerCase() === '{no speech}') {
+    if (text.toLowerCase() === 'no speech') {
       res.setHeader('Content-Type', 'text/plain');
       res.status(200).send(text);
       return;
     }
-
-    res.setHeader('Content-Type', 'audio/mpeg');
-
-    // Convert ArrayBuffer to Buffer
-    const buffer = Buffer.from(audio);
-
-    res.write(buffer);
+    
+    const data = {
+      transcript: transcription, 
+      audio: response.choices[0].message.audio.data, 
+      response: text
+    };
 
     // End the response once all chunks are sent
-    res.status(200).end();
+    res.status(200).json(data);
   } catch (e) {
     console.error('Error streaming text to speech:', e);
     res.status(500).send('Internal Server Error');
@@ -123,7 +119,15 @@ function audioFileToBase64(filePath) {
   }
 }
 
-
+function getTranscription(file) {
+  return new Promise(async (resolve, reject) => {
+    const transcription = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(file),
+      model: "whisper-1",
+    });
+    resolve(transcription);
+  });
+}
 
 // Main endpoint to handle audio upload, transcription, GPT response, and TTS streaming
 app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
@@ -132,6 +136,10 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
       console.error('No file received in the request');
       return res.status(400).json({ error: 'Audio file is required' });
     }
+
+    const transcription = await getTranscription(req.file);
+
+    console.log(transcription);
 
     const originalFilePath = path.join('/tmp', req.file.filename);
 
