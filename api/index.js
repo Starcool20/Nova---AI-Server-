@@ -307,10 +307,6 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
 
     console.log(metadataJson);
 
-    const transcription = await getTranscription(req.file);
-
-    console.log(transcription);
-
     const originalFilePath = path.join('/tmp', req.file.filename);
 
     const outputPath = path.join('/tmp', 'nova.mp4');
@@ -324,6 +320,10 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
         console.log('File written successfully!');
       }
     });
+
+    const transcription = await getTranscription(newFilePath);
+
+    console.log(transcription);
 
     await convertAudio(outputPath, newFilePath, 'mp3');
 
