@@ -263,6 +263,8 @@ async function getGPTResponse(audioData, res, data_json, transcription) {
     };
     
     console.log(response.choices[0].message.audio.data);
+    
+    res.setHeader('Content-Type', 'application/json');
 
     // End the and return with data
     res.status(200).json(data);
