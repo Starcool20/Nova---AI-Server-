@@ -57,7 +57,7 @@ function convertAudio(inputPath, outputPath, format) {
 }
 
 // Function to get GPT-generated response based on transcription
-async function getGPTResponse(audioData, res, transcription) {
+async function getGPTResponse(audioData, res, data_json) {
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-audio-preview',
@@ -69,7 +69,167 @@ async function getGPTResponse(audioData, res, transcription) {
           content: [
             {
               type: "text",
-              text: "You are an assistant named Nova, respond as an assistant according to the recording or Output:- no speech. if there isn't no human voice."
+              text: data_json.user0
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user0_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: data_json.user1
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user1_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: data_json.user2
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user2_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: data_json.user3
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user3_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: data_json.user4
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user4_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: data_json.user5
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user5_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: data_json.user6
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user6_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: data_json.user7
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user7_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: data_json.user8
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user8_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: data_json.user9
+        }
+      ]
+},
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: data_json.user9_response
+        }
+      ],
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "You are an assistant named Nova, respond as an assistant according to the recording or Output:- no speech. if there isn't no human voice. Also Respond with a witty and humorous tone or Make this reply light-hearted and funny."
             },
             {
               type: "input_audio",
@@ -81,16 +241,16 @@ async function getGPTResponse(audioData, res, transcription) {
           ]
         }
     ],
-      frequency_penalty: 2.0,
-      presence_penalty: 2.0,
-      temperature: 0.2,
+      frequency_penalty: 0.8,
+      presence_penalty: 0.7,
+      temperature: 0.9,
       max_completion_tokens: 200,
     });
 
     const text = response.choices[0].message.audio.transcript;
     console.log(text);
 
-    if (text.toLowerCase() === 'no speech') {
+    if (text.toLowerCase() === 'no speech' || text.toLowerCase() === 'no speech.') {
       res.setHeader('Content-Type', 'text/plain');
       res.status(200).send(text);
       return;
@@ -102,7 +262,7 @@ async function getGPTResponse(audioData, res, transcription) {
       response: text
     };
 
-    // End the response once all chunks are sent
+    // End the  and return with data
     res.status(200).json(data);
   } catch (e) {
     console.error('Error streaming text to speech:', e);
@@ -129,7 +289,7 @@ function getTranscription(file) {
       file: fs.createReadStream(file),
       model: "whisper-1",
     });
-    resolve(transcription);
+    resolve(transcription.text);
   });
 }
 
@@ -142,12 +302,12 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     }
     // Get the JSON metadata
     const metadata = req.body.metadata;
-    
+
     const metadataJson = JSON.parse(metadata);
-    
+
     console.log(metadataJson);
 
-   /* const transcription = await getTranscription(req.file);
+    const transcription = await getTranscription(req.file);
 
     console.log(transcription);
 
@@ -170,9 +330,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     const dataAudio = audioFileToBase64(newFilePath);
 
     // Step 2: Generate response using GPT based on the transcription
-    const gptResponse = await getGPTResponse(dataAudio, res);*/
-    
-    res.status(500).end();
+    const gptResponse = await getGPTResponse(dataAudio, res, metadataJson);
 
     // Cleanup: Delete the audio file after processing
     fs.unlink(newFilePath, (err) => {
