@@ -5,11 +5,15 @@ const fs = require('fs');
 const path = require('path');
 const OpenAI = require("openai");
 const { Readable } = require('stream');
+const bodyParser = require('body-parser');
 
 const app = express();
 const ffmpegPath = path.join(__dirname, 'bin', 'ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
 const upload = multer({ dest: '/tmp' });
+
+// Middleware to parse JSON
+app.use(bodyParser.json());
 
 // Enable CORS
 const allowCors = (fn) => async (req, res) => {
@@ -91,10 +95,10 @@ async function getGPTResponse(audioData, res, transcription) {
       res.status(200).send(text);
       return;
     }
-    
+
     const data = {
-      transcript: transcription, 
-      audio: response.choices[0].message.audio.data, 
+      transcript: transcription,
+      audio: response.choices[0].message.audio.data,
       response: text
     };
 
@@ -136,8 +140,14 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
       console.error('No file received in the request');
       return res.status(400).json({ error: 'Audio file is required' });
     }
+    // Get the JSON metadata
+    const metadata = req.body.metadata;
+    
+    const metadataJson = JSON.parse(metadata);
+    
+    console.log(metadataJson);
 
-    const transcription = await getTranscription(req.file);
+   /* const transcription = await getTranscription(req.file);
 
     console.log(transcription);
 
@@ -160,7 +170,9 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     const dataAudio = audioFileToBase64(newFilePath);
 
     // Step 2: Generate response using GPT based on the transcription
-    const gptResponse = await getGPTResponse(dataAudio, res);
+    const gptResponse = await getGPTResponse(dataAudio, res);*/
+    
+    res.status(500).end();
 
     // Cleanup: Delete the audio file after processing
     fs.unlink(newFilePath, (err) => {
