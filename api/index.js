@@ -57,7 +57,7 @@ function convertAudio(inputPath, outputPath, format) {
 }
 
 // Function to get GPT-generated response based on transcription
-async function getGPTResponse(audioData, res, data_json) {
+async function getGPTResponse(audioData, res, data_json, transcription) {
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-audio-preview',
@@ -330,7 +330,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     const dataAudio = audioFileToBase64(newFilePath);
 
     // Step 2: Generate response using GPT based on the transcription
-    const gptResponse = await getGPTResponse(dataAudio, res, metadataJson);
+    const gptResponse = await getGPTResponse(dataAudio, res, metadataJson, transcription);
 
     // Cleanup: Delete the audio file after processing
     fs.unlink(newFilePath, (err) => {
