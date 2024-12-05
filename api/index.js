@@ -262,8 +262,11 @@ async function getGPTResponse(audioData, res, data_json, transcription) {
       response: text
     };
 
-    // End the  and return with data
-    res.status(200).json(data);
+    // Convert the `data` object to a JSON string
+    const jsonString = JSON.stringify(data);
+
+    // Set headers for a JSON response
+    res.status(200).header('Content-Type', 'application/json').send(jsonString);
   } catch (e) {
     console.error('Error streaming text to speech:', e);
     res.status(500).send('Internal Server Error');
