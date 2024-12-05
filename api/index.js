@@ -321,7 +321,7 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
       }
     });
 
-    const transcription = await getTranscription(newFilePath);
+    const transcription = await getTranscription(outputPath);
 
     console.log(transcription);
 
