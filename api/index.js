@@ -258,7 +258,7 @@ async function getGPTResponse(audioData, res, data_json, transcription) {
 
     const data = {
       transcript: transcription,
-      audio: response.choices[0].message.audio.data,
+      audio: Buffer.from(response.choices[0].message.audio.data, 'base64'), 
       response: text
     };
     
