@@ -6,6 +6,7 @@ const path = require('path');
 const OpenAI = require("openai");
 const { Readable } = require('stream');
 const bodyParser = require('body-parser');
+const FormData = require('form-data');
 
 const app = express();
 const ffmpegPath = path.join(__dirname, 'bin', 'ffmpeg');
@@ -57,7 +58,7 @@ function convertAudio(inputPath, outputPath, format) {
 }
 
 // Function to get GPT-generated response based on transcription
-async function getGPTResponse(audioData, res, data_json, transcription) {
+async function getGPTResponse(audioData, res, data_json, transcription, filePath) {
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-audio-preview',
@@ -255,19 +256,28 @@ async function getGPTResponse(audioData, res, data_json, transcription) {
       res.status(200).send(text);
       return;
     }
+    
+    fs.writeFileSync(filePath, Buffer.from(response.choices[0].message.audio.data, 'base64'), 'utf8');
+
+    // Create a FormData instance
+    const form = new FormData();
 
     const data = {
       transcript: transcription,
-      audio: Array.from(Buffer.from(response.choices[0].message.audio.data, 'base64')), 
       response: text
     };
-    
-    console.log(response.choices[0].message.audio.data);
-    
-    res.setHeader('Content-Type', 'application/json');
 
-    // End the and return with data
-    res.status(200).json(data);
+    // Append the data json to a form
+    form.append('json', JSON.stringify(data), { contentType: 'application/json' });
+
+    // Append the file to the form
+    form.append('file', fs.createReadStream(filePath), { filename: 'response.mp3' });
+
+    console.log(response.choices[0].message.audio.data);
+
+    // Set the correct content-type and send the form data
+    res.setHeader('Content-Type', `multipart/form-data; boundary=${form.getBoundary()}`);
+    form.pipe(res);
   } catch (e) {
     console.error('Error streaming text to speech:', e);
     res.status(500).send('Internal Server Error');
@@ -334,12 +344,13 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     const dataAudio = audioFileToBase64(newFilePath);
 
     // Step 2: Generate response using GPT based on the transcription
-    const gptResponse = await getGPTResponse(dataAudio, res, metadataJson, transcription);
+    const gptResponse = await getGPTResponse(dataAudio, res, metadataJson, transcription, newFilePath);
 
     // Cleanup: Delete the audio file after processing
     fs.unlink(newFilePath, (err) => {
       if (err) console.error('Failed to delete file:', err);
     });
+    res.status(200).end();
   } catch (error) {
     console.error(error);
     res.status(500).send('Error processing the audio file.');
