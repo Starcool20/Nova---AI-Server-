@@ -256,7 +256,7 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
       res.status(200).send(text);
       return;
     }
-    
+
     fs.writeFileSync(filePath, Buffer.from(response.choices[0].message.audio.data, 'base64'), 'utf8');
 
     // Create a FormData instance
@@ -264,19 +264,17 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
 
     const data = {
       transcript: transcription,
-      response: text
+      response: text,
     };
 
-    // Append the data json to a form
+    // Append the JSON data
     form.append('json', JSON.stringify(data), { contentType: 'application/json' });
 
-    // Append the file to the form
-    form.append('file', fs.createReadStream(filePath), { filename: 'response.mp3' });
+    // Append the file
+    form.append('file', fs.createReadStream(filePath), { filename: 'nova.mp3' });
 
-    console.log(response.choices[0].message.audio.data);
-
-    // Set the correct content-type and send the form data
-    res.setHeader('Content-Type', `multipart/form-data; boundary=${form.getBoundary()}`);
+    // Pipe the form data directly to the response
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Optional: Allow cross-origin requests
     form.pipe(res);
   } catch (e) {
     console.error('Error streaming text to speech:', e);
@@ -350,7 +348,6 @@ app.post('/prompt-nova', upload.single('audio'), async (req, res) => {
     fs.unlink(newFilePath, (err) => {
       if (err) console.error('Failed to delete file:', err);
     });
-    res.status(200).end();
   } catch (error) {
     console.error(error);
     res.status(500).send('Error processing the audio file.');
