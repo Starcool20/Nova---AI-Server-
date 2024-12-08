@@ -257,26 +257,12 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
       return;
     }
 
-    fs.writeFileSync(filePath, Buffer.from(response.choices[0].message.audio.data, 'base64'), 'utf8');
-
-    // Create a FormData instance
-    const form = new FormData();
-
     const data = {
       transcript: transcription,
-      response: text,
+      audio: response.choices[0].message.audio.data, 
+      response: text
     };
-
-    // Append the JSON data
-    form.append('json', JSON.stringify(data), { contentType: 'application/json' });
-
-    // Append the file
-    form.append('file', fs.createReadStream(filePath), { filename: 'nova.mp3' });
-
-    // Pipe the form data directly to the response
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Optional: Allow cross-origin requests
-    res.setHeader('Content-Type', `multipart/form-data; boundary=${form.getBoundary()}`);
-    form.pipe(res);
+    res.status(200).json(data);
   } catch (e) {
     console.error('Error streaming text to speech:', e);
     res.status(500).send('Internal Server Error');
