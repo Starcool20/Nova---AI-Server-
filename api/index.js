@@ -275,6 +275,7 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
 
     // Pipe the form data directly to the response
     res.setHeader('Access-Control-Allow-Origin', '*'); // Optional: Allow cross-origin requests
+    res.setHeader('Content-Type', `multipart/form-data; boundary=${form.getBoundary()}`);
     form.pipe(res);
   } catch (e) {
     console.error('Error streaming text to speech:', e);
