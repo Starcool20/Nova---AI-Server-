@@ -245,7 +245,7 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
       frequency_penalty: 0.8,
       presence_penalty: 0.7,
       temperature: 0.9,
-      max_completion_tokens: 200,
+      max_completion_tokens: 1024,
     });
 
     const text = response.choices[0].message.audio.transcript;
