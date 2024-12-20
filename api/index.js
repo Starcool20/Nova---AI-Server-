@@ -262,7 +262,14 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
       audio: response.choices[0].message.audio.data, 
       response: text
     };
-    res.status(200).json(data);
+    
+    const responseBody = JSON.stringify(data);
+    
+    res.setHeader('Content-Type', 'application/json');
+    
+    res.setHeader('Content-Length', Buffer.byteLength(responseBody)); // Calculate content size
+    
+    res.status(200).send(responseBody);
   } catch (e) {
     console.error('Error streaming text to speech:', e);
     res.status(500).send('Internal Server Error');
