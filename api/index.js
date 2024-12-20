@@ -257,19 +257,27 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
       return;
     }
 
-    const data = {
-      transcript: transcription,
-      audio: response.choices[0].message.audio.data, 
-      response: text
-    };
-    
-    const responseBody = JSON.stringify(data);
-    
     res.setHeader('Content-Type', 'application/json');
-    
-    res.setHeader('Content-Length', Buffer.byteLength(responseBody)); // Calculate content size
-    
-    res.status(200).send(responseBody);
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    const audio = response.choices[0].message.audio.data;
+
+    // Break audio data into 50KB chunks and send each chunk
+    const chunkSize = 50 * 1024; // 50KB
+    for (let i = 0; i < audio.length; i += chunkSize) {
+      const chunk = audio.slice(i, i + chunkSize); // Slice 50KB chunk
+
+      const data = {
+        transcript: '', // Include transcript only if needed
+        audio: chunk, // Send current chunk
+        response: '' // Include response if needed
+      };
+
+      res.write(JSON.stringify(data) + '\n'); // Add a newline for easier chunk separation
+    }
+
+    // End the response after sending all chunks
+    res.end();
   } catch (e) {
     console.error('Error streaming text to speech:', e);
     res.status(500).send('Internal Server Error');
