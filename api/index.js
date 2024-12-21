@@ -257,26 +257,25 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
       return;
     }
 
-    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Transfer-Encoding', 'chunked');
 
-    const audio = response.choices[0].message.audio.data;
+    // Step 1: Send Metadata as JSON
+    const metadata = JSON.stringify({
+      transcript: transcription,
+      response: text,
+    });
+    res.write(metadata + '\n'); // Send metadata as JSON followed by a newline
 
-    // Break audio data into 50KB chunks and send each chunk
-    const chunkSize = 50 * 1024; // 50KB
+    // Step 2: Send Audio as Raw Binary Data
+    const audio = Buffer.from(response.choices[0].message.audio.data, 'base64'); // Decode Base64
+    const chunkSize = 50 * 1024; // 50KB chunks
+
     for (let i = 0; i < audio.length; i += chunkSize) {
-      const chunk = audio.slice(i, i + chunkSize); // Slice 50KB chunk
-
-      const data = {
-        transcript: '', // Include transcript only if needed
-        audio: chunk, // Send current chunk
-        response: '' // Include response if needed
-      };
-
-      res.write(JSON.stringify(data) + '\n'); // Add a newline for easier chunk separation
+      const chunk = audio.slice(i, i + chunkSize); // Slice binary chunk
+      res.write(chunk); // Write raw binary chunk
     }
 
-    // End the response after sending all chunks
     res.end();
   } catch (e) {
     console.error('Error streaming text to speech:', e);
