@@ -269,7 +269,7 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
 
     // Step 2: Send Audio as Raw Binary Data
     const audio = Buffer.from(response.choices[0].message.audio.data, 'base64'); // Decode Base64
-    const chunkSize = 10 * 1024; // 50KB chunks
+    const chunkSize = 2 * 1024; // 50KB chunks
 
     for (let i = 0; i < audio.length; i += chunkSize) {
       const chunk = audio.slice(i, i + chunkSize); // Slice binary chunk
