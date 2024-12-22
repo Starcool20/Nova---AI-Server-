@@ -259,7 +259,7 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
 
     const audioBuffer = Buffer.from(response.choices[0].message.audio.data, 'base64');
 
-    const audioFilePath = path.join(__dirname, 'output_audio.mp3');
+    const audioFilePath = path.join('/tmp', 'output_audio.mp3');
 
     fs.writeFileSync(audioFilePath, audioBuffer); // Save the audio file
     console.log('Audio file saved:', audioFilePath);
