@@ -274,26 +274,29 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
     // Step 4: Send Metadata
     res.write(JSON.stringify(metadata) + '\n'); // Send metadata as JSON followed by a newline
 
-    // Step 5: Stream Audio File
-    const readStream = fs.createReadStream(audioFilePath, { highWaterMark: 100 * 1024 }); // 100KB chunks
-    readStream.on('data', (chunk) => {
-      res.write(chunk); // Stream each chunk of the audio file
-    });
+    // Step 5: Send Audio Data at Once
+    fs.readFile(audioFilePath, (err, audioData) => {
+      if (err) {
+        console.error('Error reading audio file:', err);
+        res.status(500).json({ error: 'Failed to read audio file' });
+        return;
+      }
 
-    readStream.on('end', () => {
-      res.end(); // End the response once the file is fully streamed
+      // Send the audio data
+      res.write(audioData);
+      res.end();
 
-      // Cleanup: Delete the audio file after processing
-      fs.unlink(audioFilePath, (err) => {
-        if (err) console.error('Failed to delete file:', err);
+      // Cleanup: Delete the audio file after sending
+      fs.unlink(audioFilePath, (unlinkErr) => {
+        if (unlinkErr) {
+          console.error('Failed to delete file:', unlinkErr);
+        } else {
+          console.log('Temporary audio file deleted successfully');
+        }
       });
     });
-
-    readStream.on('error', (err) => {
-      console.error('Error streaming audio file:', err);
-      res.status(500).end('Error streaming audio file');
-    });
-  } catch (e) {
+  }
+  catch (e) {
     console.error('Error streaming text to speech:', e);
     res.status(500).send('Internal Server Error');
   }
