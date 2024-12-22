@@ -257,26 +257,44 @@ async function getGPTResponse(audioData, res, data_json, transcription, filePath
       return;
     }
 
+    const audioBuffer = Buffer.from(response.choices[0].message.audio.data, 'base64');
+
+    const audioFilePath = path.join(__dirname, 'output_audio.mp3');
+
+    fs.writeFileSync(audioFilePath, audioBuffer); // Save the audio file
+    console.log('Audio file saved:', audioFilePath);
+
+    const metadata = {
+      transcript: transcription, // Replace with actual transcription
+      response: text, // Replace with actual response text
+    };
+
+    // Step 3: Set Headers
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Transfer-Encoding', 'chunked');
 
-    // Step 1: Send Metadata as JSON
-    const metadata = JSON.stringify({
-      transcript: transcription,
-      response: text,
+    // Step 4: Send Metadata
+    res.write(JSON.stringify(metadata) + '\n'); // Send metadata as JSON followed by a newline
+
+    // Step 5: Stream Audio File
+    const readStream = fs.createReadStream(audioFilePath, { highWaterMark: 100 * 1024 }); // 100KB chunks
+    readStream.on('data', (chunk) => {
+      res.write(chunk); // Stream each chunk of the audio file
     });
-    res.write(metadata + '\n'); // Send metadata as JSON followed by a newline
 
-    // Step 2: Send Audio as Raw Binary Data
-    const audio = Buffer.from(response.choices[0].message.audio.data, 'base64'); // Decode Base64
-    const chunkSize = 2 * 1024; // 50KB chunks
+    readStream.on('end', () => {
+      res.end(); // End the response once the file is fully streamed
 
-    for (let i = 0; i < audio.length; i += chunkSize) {
-      const chunk = audio.slice(i, i + chunkSize); // Slice binary chunk
-      res.write(chunk); // Write raw binary chunk
-    }
+      // Cleanup: Delete the audio file after processing
+      fs.unlink(audioFilePath, (err) => {
+        if (err) console.error('Failed to delete file:', err);
+      });
+    });
 
-    res.end();
+    readStream.on('error', (err) => {
+      console.error('Error streaming audio file:', err);
+      res.status(500).end('Error streaming audio file');
+    });
   } catch (e) {
     console.error('Error streaming text to speech:', e);
     res.status(500).send('Internal Server Error');
